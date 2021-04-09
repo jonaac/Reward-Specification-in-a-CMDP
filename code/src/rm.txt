@@ -1,0 +1,7 @@
+0
+(0,0,'!e&!n',ConstantRewardFunction(0))
+(0,1,'e&!g&!n',ConstantRewardFunction(0))
+(0,2,'e&g&!n',ConstantRewardFunction(1))
+(1,1,'!g&!n',ConstantRewardFunction(0))
+(1,2,'g&!n',ConstantRewardFunction(1))
+(2,2,'True',ConstantRewardFunction(0))
