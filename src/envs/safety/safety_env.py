@@ -47,7 +47,8 @@ class SafeEnv(Engine):
 	def __init__(
 			self, zones:list, 
 			use_fixed_map:float,
-			timeout:int, config=dict):
+			timeout:int, config=dict
+		):
 
 		self.DEFAULT.update({
 			'observe_zones': False,

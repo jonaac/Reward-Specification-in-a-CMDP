@@ -3,13 +3,14 @@ import random, math, os, pickle
 import numpy as np
 
 class WaterWorldParams:
-	"""
-	Auxiliary class with the configuration parameters that the Game class needs
-	"""
 
-	def __init__(self, state_file = None, max_x = 1000, max_y = 700, b_num_colors = 6, 
-					   b_radius = 20, b_velocity = 30, b_num_per_color = 10,
-					   use_velocities = True, ball_disappear = True):
+	def __init__(
+			self, state_file = None, 
+			max_x = 1000, max_y = 700, 
+			b_num_colors = 6, b_radius = 20, 
+			b_velocity = 30, b_num_per_color = 10,
+			use_velocities = True, ball_disappear = False
+		):
 		self.max_x = max_x
 		self.max_y = max_y
 		self.b_num_colors = b_num_colors
@@ -56,7 +57,7 @@ class WaterWorld:
 		return ret		
 
 	def _update_events(self):
-		self.true_props = ""
+		self.true_props  = ""
 		current_collisions = self._get_current_collision()
 		for b in current_collisions - self.current_collisions_old:
 			self.true_props += b.color
@@ -67,7 +68,8 @@ class WaterWorld:
 		# computing events
 		self._update_events()
 
-		# if balls disappear, then relocate balls that the agent is colliding before the action
+		# if balls disappear, then relocate balls that 
+		# the agent is colliding before the action
 		if self.params.ball_disappear:
 			for b in self.balls:
 				if self.agent.is_colliding(b):
@@ -89,15 +91,19 @@ class WaterWorld:
 			# walls
 			if b.pos[0] - b.radius < 0 or b.pos[0] + b.radius > max_x:
 				# Place ball against edge
-				if b.pos[0] - b.radius < 0: b.pos[0] = b.radius		  
-				else: b.pos[0] = max_x - b.radius
+				if b.pos[0] - b.radius < 0: 
+					b.pos[0] = b.radius		  
+				else: 
+					b.pos[0] = max_x - b.radius
 				# Reverse direction
 				b.vel = b.vel * np.array([-1.0,1.0])
 			if b.pos[1] - b.radius < 0 or b.pos[1] + b.radius > max_y:
 				# Place ball against edge
-				if b.pos[1] - b.radius < 0: b.pos[1] = b.radius
-				else: b.pos[1] = max_y - b.radius
-				# Reverse directio
+				if b.pos[1] - b.radius < 0: 
+					b.pos[1] = b.radius
+				else: 
+					b.pos[1] = max_y - b.radius
+				# Reverse direction`
 				b.vel = b.vel * np.array([1.0,-1.0])
 		
 
@@ -107,16 +113,19 @@ class WaterWorld:
 		"""
 		return self.true_props
 
-	# The following methods return different feature representations of the map ------------
+	# The following methods return different feature representations of the map
 	def get_features(self):
-		# Absolute position and velocity of the agent + relative positions and velocities of the other balls
+		# Absolute position and velocity of the agent + relative positions 
+		# and velocities of the other balls
 		# with respect to the agent
 		if self.use_velocities:
 			agent, balls = self.agent, self.balls
 			n_features = 4 + len(balls) * 4
 			features = np.zeros(n_features,dtype=np.float)
 
-			pos_max = np.array([float(self.params.max_x), float(self.params.max_y)])
+			pos_max = np.array(
+				[float(self.params.max_x), float(self.params.max_y)]
+			)
 			vel_max = float(self.params.b_velocity + self.params.a_vel_max)
 
 			features[0:2] = agent.pos/pos_max
@@ -134,7 +143,9 @@ class WaterWorld:
 			n_features = 4 + len(balls) * 2
 			features = np.zeros(n_features,dtype=np.float)
 
-			pos_max = np.array([float(self.params.max_x), float(self.params.max_y)])
+			pos_max = np.array(
+				[float(self.params.max_x), float(self.params.max_y)]
+			)
 			vel_max = float(self.params.b_velocity + self.params.a_vel_max)
 
 			features[0:2] = agent.pos/pos_max
@@ -150,33 +161,44 @@ class WaterWorld:
 		return features
 	
 
-	def _is_collising(self, pos):
+	def _is_colliding(self, pos):
 		for b in self.balls + [self.agent]:
-			if np.linalg.norm(b.pos - np.array(pos), ord=2) < 2*self.params.b_radius:
+			norm = np.linalg.norm(b.pos - np.array(pos), ord=2)
+			if norm < 2*self.params.b_radius:
 				return True
 		return False
 
 	def _get_pos_vel_new_ball(self):
 		max_x	= self.params.max_x
-		max_y	 = self.params.max_y
+		max_y	= self.params.max_y
 		radius	= self.params.b_radius
-		b_vel	 = self.params.b_velocity
-		angle = random.random()*2*math.pi
+		b_vel	= self.params.b_velocity
+		angle	= random.random()*2*math.pi
 		if self.use_velocities:
 			vel = b_vel*math.sin(angle),b_vel*math.cos(angle)
 		else:
 			vel = 0.0, 0.0
 		while True:
-			pos = 2*radius + random.random()*(max_x - 2*radius), 2*radius + random.random()*(max_y - 2*radius)
-			if not self._is_collising(pos) and np.linalg.norm(self.agent.pos - np.array(pos), ord=2) > 4*radius:
+			x = 2*radius + random.random()*(max_x - 2*radius)
+			y = 2*radius + random.random()*(max_y - 2*radius)
+			pos = x, y 
+			norm  = np.linalg.norm(self.agent.pos - np.array(pos), ord=2)
+			if (not self._is_colliding(pos)
+				and norm > 4*radius):
 				break
 		return pos, vel	
 
-	# The following methods create the map ----------------------------------------------
+	# The following methods create the map -------------------------------------
 
 	def _load_map(self):
 		# contains all the actions that the agent can perform
-		actions = [Actions.up.value, Actions.left.value, Actions.right.value, Actions.down.value, Actions.none.value]
+		actions = [
+			Actions.up.value,
+			Actions.left.value,
+			Actions.right.value,
+			Actions.down.value,
+			Actions.none.value
+		]
 		max_x	= self.params.max_x
 		max_y	 = self.params.max_y
 		radius	= self.params.b_radius
@@ -184,8 +206,14 @@ class WaterWorld:
 		vel_delta = self.params.a_vel_delta
 		vel_max   = self.params.a_vel_max
 		# Adding the agent
-		pos_a = [2*radius + random.random()*(max_x - 2*radius), 2*radius + random.random()*(max_y - 2*radius)]
-		self.agent = BallAgent("A", radius, pos_a, [0.0,0.0], actions, vel_delta, vel_max)
+		pos_a = [
+			2*radius + random.random()*(max_x - 2*radius), 
+			2*radius + random.random()*(max_y - 2*radius)
+		]
+		self.agent = BallAgent(
+			"A", radius, pos_a, [0.0,0.0], 
+			actions, vel_delta, vel_max
+		)
 		# Adding the balls
 		self.balls = []
 		colors = "abcdefghijklmnopqrstuvwxyz"
@@ -262,7 +290,11 @@ class Ball:
 		self.update(pos, vel)
 
 	def __str__(self):
-		return "\t".join([self.color, str(self.pos[0]), str(self.pos[1]), str(self.vel[0]), str(self.vel[1])])
+		string = [ self.color, 
+			str(self.pos[0]), str(self.pos[1]), 
+			str(self.vel[0]), str(self.vel[1])
+		]
+		return "\t".join(stng)
 
 	def update_position(self, elapsedTime):
 		self.pos = self.pos + elapsedTime * self.vel
@@ -301,46 +333,19 @@ class BallAgent(Ball):
 	def get_actions(self):
 		return self.actions
 
-
-def get_position(b, max_y):
-	return int(round(b.pos[0])), int(max_y) - int(round(b.pos[1]))
-
-def draw_ball(b, colors, thickness, gameDisplay, pygame, max_y):
-	pygame.draw.circle(gameDisplay, colors[b.color], get_position(b, max_y), b.radius, thickness)
-
-def draw_point(a_pos, pos, gameDisplay, pygame, max_y):
-	a_pos_real = int(round(a_pos[0])), int(max_y) - int(round(a_pos[1]))
-	pos_real = int(round(pos[0])), int(max_y) - int(round(pos[1]))
-	pygame.draw.line(gameDisplay, (0,0,0), a_pos_real, pos_real)
-	pygame.draw.circle(gameDisplay, (255,0,0), pos_real, 4)
-
-
-def get_colors():
-	colors = {}
-	colors["A"] = (0,0,0)
-	colors["a"] = (255,0,0)
-	colors["b"] = (0,255,0)
-	colors["c"] = (0,0,255)
-	colors["d"] = (255,255,0) # yellow
-	colors["e"] = (0,255,255) # cyan
-	colors["f"] = (255,0,255) # magenta
-	colors["g"] = (192,192,192)
-	colors["h"] = (128,128,128)
-	colors["i"] = (128,0,0)
-	colors["j"] = (128,128,0)
-	colors["k"] = (0,128,0)
-	colors["l"] = (128,0,128)
-	colors["m"] = (0,128,128)
-	colors["n"] = (0,0,128)
-	return colors
-
 def save_random_world(num_worlds, folder_out="maps/"):
 	max_x = 400
 	max_y = 400
 	b_num_per_color = 2
 	b_radius = 15
 	use_velocities = True
-	params = WaterWorldParams(None, b_radius=b_radius, max_x=max_x, max_y=max_y, b_num_per_color=b_num_per_color, use_velocities = use_velocities)
+	params = WaterWorldParams(
+		None, 
+		b_radius=b_radius,
+		max_x=max_x, 
+		max_y=max_y,
+		b_num_per_color=b_num_per_color, 
+		use_velocities = use_velocities)
 	
 	for i in range(num_worlds):
 		random.seed(i)

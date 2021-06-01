@@ -77,24 +77,22 @@ class RewardMachineEnv(gym.Wrapper):
 		self.obs = next_obs
 
 		# update the RM state
-		self.current_u_id, rm_rew, rm_c, rm_done = self.current_rm.step(
-												self.current_u_id, 
-												true_props,
-												info
-											)
+		self.current_u_id, rm_r, rm_c, rm_done = self.current_rm.step(
+													self.current_u_id, 
+													true_props,
+													info
+												)
 
 		# returning the result of this action
 		done = rm_done or env_done
-		print(self.current_u_id)
-		print(done)
 		rm_obs = self.get_observation(
 			next_obs, 
 			self.current_rm_id,
-			self.current_u_id, 
+			self.current_u_id,
 			done
 		)
 
-		return rm_obs, rm_rew, rm_c, done, info
+		return rm_obs, rm_r, rm_c, done, info
 
 	def get_observation(self, next_obs, rm_id, u_id, done):
 		if done:
@@ -102,5 +100,4 @@ class RewardMachineEnv(gym.Wrapper):
 		else:
 			rm_feat = self.rm_state_features[(rm_id,u_id)]
 		rm_obs = {'features': next_obs,'rm-state': rm_feat}
-		return gym.spaces.flatten(self.observation_dict, rm_obs)  	   
-
+		return gym.spaces.flatten(self.observation_dict, rm_obs)

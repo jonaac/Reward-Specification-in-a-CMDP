@@ -65,7 +65,7 @@ def ActorNetwork(states, actions, action_max):
 	model = tf.keras.Model([state_input, action_input], outputs)
 	return model
 
-class CLRM:
+class DDPG:
 
 	"""
 	Need to import: GAMMA, RHO, STD_DEV
