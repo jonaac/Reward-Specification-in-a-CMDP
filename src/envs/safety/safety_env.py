@@ -6,14 +6,14 @@ from safety_gym.envs.engine import Engine
 from rm.rm_env import RewardMachineEnv
 
 class zone(enum.Enum):
-	JetBlack = 0
-	White	= 1
-	Blue	= 2
-	Green	= 3
-	Red		= 4
-	Yellow	= 5
-	Cyan	= 6
-	Magenta	= 7
+	JetBlack 	= 0
+	White		= 1
+	Blue		= 2
+	Green		= 3
+	Red			= 4
+	Yellow		= 5
+	Cyan		= 6
+	Magenta		= 7
 
 	def __lt__(self, sth):
 		return self.value < sth.value
@@ -131,8 +131,8 @@ class SafeEnv(Engine):
 			rbga = self.zone_rgbs[i] * [1, 1, 1, 0.25]
 			name = f'zone{i}'
 			geom = {'name': name,
-					'size': [self.zones_size, 1e-2],#self.zones_size / 2],
-					'pos': np.r_[self.layout[name], 2e-2],#self.zones_size / 2 + 1e-2],
+					'size': [self.zones_size, 1e-2],
+					'pos': np.r_[self.layout[name], 2e-2],
 					'rot': self.random_rot(),
 					'type': 'cylinder',
 					'contype': 0,
@@ -187,9 +187,6 @@ class SafeEnv(Engine):
 		if (self.use_fixed_map): 
 			self._seed = np.random.randint(2**32) if seed is None else seed
 
-	'''
-	TO BE COMPLETED
-	'''
 	def get_events(self):
 
 		events = ''
