@@ -136,8 +136,8 @@ class WaterWorld:
 				b = balls[i]
 				if not self.params.ball_disappear or not agent.is_colliding(b):
 					init = 4*(i+1)
-					features[init:init+2]   = (b.pos - agent.pos)/pos_max
-					features[init+2:init+4] = (b.vel - agent.vel)/vel_max
+					features[init:init+2]   = (b.pos - agent.pos) / pos_max
+					features[init+2:init+4] = (b.vel - agent.vel) / vel_max
 		else:
 			agent, balls = self.agent, self.balls
 			n_features = 4 + len(balls) * 2
