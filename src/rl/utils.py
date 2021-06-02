@@ -4,7 +4,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from parameters import BUFFER_UNBALANCE_GAP
+from rl.parameters import BUFFER_UNBALANCE_GAP
 from collections import deque
 
 
