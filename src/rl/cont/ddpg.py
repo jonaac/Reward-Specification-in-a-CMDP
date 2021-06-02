@@ -1,69 +1,79 @@
 import os
 
 import numpy as np
-import tensorflow as tf 
+import tensorflow as tf
+from tensorflow.keras import Model
 
-# <----- NEDS TO BE DEVELOPED -------> #
-from parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
+from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
 								BUFFER_SIZE, BATCH_SIZE, CRITIC_LR, ACTOR_LR)
-from utils import OUActionNoise, ReplayBuffer
+from rl.utils import OUActionNoise, ReplayBuffer
 
 
-def CriticNetwork(states, actions, action_max):
+class ActorNetwork(Model):
+
+	def __init__(self, states, actions, action_max):
+
+		last_init = tf.random_normal_initializer(stddev=0.0005)
+
+		inputs = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
+		out = tf.keras.layers.Dense(
+				600,
+				activation=tf.nn.leaky_relu,
+				kernel_initializer=KERNEL_INITIALIZER)(inputs)
+		out = tf.keras.layers.Dense(
+				300,
+				activation=tf.nn.leaky_relu,
+				kernel_initializer=KERNEL_INITIALIZER)(out)
+		outputs = tf.keras.layers.Dense(
+					actions,
+					activation="tanh",
+					kernel_initializer=last_init)(out) * action_max
+		super().__init__(inputs, outputs)
+
+class CriticNetwork(Model):
+
+	def __init__(self, states, actions, action_max):
 		
-	last_init = tf.random_normal_initializer(stddev=0.0005)
+		last_init = tf.random_normal_initializer(stddev=0.00005)
 
-	inputs = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
-	out = tf.keras.layers.Dense(
-			600,
-			activation=tf.nn.leaky_relu,
-			kernel_initializer=KERNEL_INITIALIZER)(inputs)
-	out = tf.keras.layers.Dense(
-			300,
-			activation=tf.nn.leaky_relu,
-			kernel_initializer=KERNEL_INITIALIZER)(out)
-	outputs = tf.keras.layers.Dense(
-				actions,
-				activation="tanh",
-				kernel_initializer=last_init)(out) * action_max
+		# State input
+		state_input = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
+		state_out = tf.keras.layers.Dense(
+			600, activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(state_input)
+		state_out = tf.keras.layers.BatchNormalization()(state_out)
+		state_out = tf.keras.layers.Dense(
+			300, activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(state_out)
 
-	model = tf.keras.Model(inputs, outputs)
-	return model
+		# Action input
+		action_input = tf.keras.layers.Input(shape=(actions), dtype=tf.float32)
+		action_out = tf.keras.layers.Dense(
+			300, activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(action_input/action_max)
 
-def ActorNetwork(states, actions, action_max):
-		
-	last_init = tf.random_normal_initializer(stddev=0.00005)
+		# Concatenate Layers
+		added = tf.keras.layers.Add()([state_out, action_out])
 
-	# State input
-	state_input = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
-	state_out = tf.keras.layers.Dense(
-		600, activation=tf.nn.leaky_relu,
-		kernel_initializer=KERNEL_INITIALIZER)(state_input)
-	state_out = tf.keras.layers.BatchNormalization()(state_out)
-	state_out = tf.keras.layers.Dense(
-		300, activation=tf.nn.leaky_relu,
-		kernel_initializer=KERNEL_INITIALIZER)(state_out)
+		added = tf.keras.layers.BatchNormalization()(added)
+		outs = tf.keras.layers.Dense(
+			150, activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(added)
+		outs = tf.keras.layers.BatchNormalization()(outs)
+		# outs = tf.keras.layers.Dropout(DROUPUT_N)(outs)
+		outputs = tf.keras.layers.Dense(1, kernel_initializer=last_init)(outs)
 
-	# Action input
-	action_input = tf.keras.layers.Input(shape=(actions), dtype=tf.float32)
-	action_out = tf.keras.layers.Dense(
-		300, activation=tf.nn.leaky_relu,
-		kernel_initializer=KERNEL_INITIALIZER)(action_input/action_max)
+		# Outputs single value for given state-action
+		super().__init__([state_input, action_input], outputs)
 
-	# Concatenate Layers
-	added = tf.keras.layers.Add()([state_out, action_out])
-
-	added = tf.keras.layers.BatchNormalization()(added)
-	outs = tf.keras.layers.Dense(
-		150, activation=tf.nn.leaky_relu,
-		kernel_initializer=KERNEL_INITIALIZER)(added)
-	outs = tf.keras.layers.BatchNormalization()(outs)
-	# outs = tf.keras.layers.Dropout(DROUPUT_N)(outs)
-	outputs = tf.keras.layers.Dense(1, kernel_initializer=last_init)(outs)
-
-	# Outputs single value for give state-action
-	model = tf.keras.Model([state_input, action_input], outputs)
-	return model
+def update_target(target, ref, rho=0):
+	weights = []
+	old_weights = list(zip(target.get_weights(), ref.get_weights()))
+	for (target_weight, ref_weight) in old_weights:
+		w = rho * ref_weight + (1 - rho) * target_weight
+		weights.append(w)
+	
+	target.set_weights(weights)
 
 class DDPG:
 
@@ -116,9 +126,12 @@ class DDPG:
 		def update_weights(s, a, r, sn, d):
 			# Update Critic network
 			with tf.GradientTape() as tape:
+				tape.watch(self.critic_network.trainable_variables)
+				
 				# Compute Target y
 				target = self.critic_target([sn, self.actor_target(sn)])
 				y = r + self.gamma * (1-d) * target
+				
 				# Compute Delta Q
 				error = tf.math.abs(y - self.critic_network([s, a]))
 				critic_loss = tf.math.reduce_mean(error)
@@ -130,6 +143,7 @@ class DDPG:
 
 			# Update Actor network
 			with tf.GradientTape() as tape:
+				tape.watch(self.actor_network.trainable_variables)
 				# define the delta mu
 				target = self.critic_network([s, self.actor_network(s)])
 				actor_loss = -tf.math.reduce_mean(target)
@@ -151,9 +165,10 @@ class DDPG:
 									self.action_high,
 									self.num_actions)
 		_noise = (self.noise() if noise else 0)
-		self.cur_action = (self.actor_network(state)[0].numpy() 
-			if _notrandom
-			else random)
+		if _notrandom:
+			self.cur_action = self.actor_network(state)[0].numpy() 
+		else:
+			self.cur_action = _random
 		self.cur_action += _noise
 		self.cur_action = np.clip(
 			self.cur_action,
@@ -162,9 +177,6 @@ class DDPG:
 
 		return self.cur_action
 
-	"""
-	NEEDS ReplayBuffer TO BE DEVELOPED
-	"""
 	def remember(self, prev_state, reward, state, done):
 		# record it in the buffer based on its reward
 		self.buffer.append(prev_state, self.cur_action, reward, state, done)
@@ -172,11 +184,13 @@ class DDPG:
 	def learn(self, entry):
 		s,a,r,sn,d = zip(*entry)
 
-		c_l, a_l = self.update_weights(	tf.convert_to_tensor(s,dtype=tf.float32),
-										tf.convert_to_tensor(a,dtype=tf.float32),
-										tf.convert_to_tensor(r,dtype=tf.float32),
-										tf.convert_to_tensor(sn,dtype=tf.float32),
-										tf.convert_to_tensor(d,dtype=tf.float32))
+		c_l, a_l = self.update_weights(	
+			tf.convert_to_tensor(s,dtype=tf.float32),
+			tf.convert_to_tensor(a,dtype=tf.float32),
+			tf.convert_to_tensor(r,dtype=tf.float32),
+			tf.convert_to_tensor(sn,dtype=tf.float32),
+			tf.convert_to_tensor(d,dtype=tf.float32)
+		)
 
 		update_target(self.actor_target, self.actor_network, self.rho)
 		update_target(self.critic_target, self.critic_network, self.rho)
