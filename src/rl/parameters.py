@@ -5,7 +5,7 @@ Common definitions of variables that can be used across files
 from tensorflow.keras.initializers import glorot_normal
 
 # general parameters
-CHECKPOINTS_PATH = "checkpoints/DDPG_"
+CHECKPOINTS_PATH = "../../savedmodels/"
 TF_LOG_DIR = './logs/DDPG/'
 
 # CLRM parameters
