@@ -209,11 +209,8 @@ class SafeEnvRM(RewardMachineEnv):
 		zones =	[	
 			zone.JetBlack,
 			zone.JetBlack,
-			zone.JetBlack,
-			zone.JetBlack, 
 			zone.Red,
-			zone.White,
-			zone.Magenta
+			zone.White
 		]
 
 		env = SafeEnv(
