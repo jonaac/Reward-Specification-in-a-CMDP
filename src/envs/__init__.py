@@ -5,7 +5,7 @@ from envs.halfcheetah.hc_env import HalfCheetahSafeEnv, HalfCheetahSafeEnvRM
 from envs.water.water_env import WaterEnv, WaterEnvRM
 # from envs.minecraft.minecraft_env import MineCraftEnv, MineCraftEnvRM
 
-__all__ = ["SafeEnvRM"]
+__all__ = ["SafeEnvRM","HalfCheetahSafeEnvRM","WaterEnvRM"]
 
 ### MineCraft Envs
 '''
@@ -18,8 +18,8 @@ register(
 
 register(
 	id='Safe-Water-World-v0',
-	entry_point='envs.water.water_env:WaterEnvRM',
-	max_episode_steps=600)
+	entry_point='envs.water.water_env:WaterEnvRM')
+	# max_episode_steps=600)
 
 ### Half Cheetah Envs
 
