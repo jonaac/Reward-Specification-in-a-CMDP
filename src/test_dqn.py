@@ -4,25 +4,21 @@ import psutil
 
 import envs, gym, rl
 gym.logger.set_level(40)
-import safety_gym
 
 import numpy as np
 import tensorflow as tf
 
-from rl.cont.ddpg import DDPG
+from rl.disc.dqn import DQL
 from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES, 
-								TF_LOG_DIR, UNBALANCE_P)
+							TF_LOG_DIR, UNBALANCE_P)
 
 SAVE_WEIGHTS = True
 
-env = gym.make('Safety-Gym-v0')
-action_space_high = env.action_space.high[0]
-action_space_low = env.action_space.low[0]
+env = gym.make('Safe-Water-World-v0')
 observation_space = env.observation_space.shape[0]
-action_space = env.action_space.shape[0]
+action_space = env.action_space.n
 
-ddpg = DDPG(observation_space, action_space,
-			action_space_high, action_space_low)
+dql = DQL(observation_space, action_space)
 
 # weighted sum of rewards for each epoch
 acc_reward = tf.keras.metrics.Sum('reward', dtype=tf.float32)
@@ -37,27 +33,26 @@ avg_reward_list = []
 
 
 EPOCHS = 100
-T = 1000
+T = 600
 
 print('Start Training')
 print('--------------')
 
 for epoch in range(EPOCHS):
-	print(type(env))
 	s = env.reset()
 	acc_reward.reset_states()
-	ddpg.noise.reset()
+	dql.noise.reset()
 	start_time = time.time()
 	print('Epoch #' + str(epoch))
 
 	for i in range(T):
-		a = ddpg.act(s)
+		a, q_l = dql.act(s)
 		sn, r, _, done, info = env.step(a)
-		brain = ddpg.remember(s,r,sn,int(done))
+		brain = dql.remember(s,r,sn,int(done))
 
-		if ddpg.can_train():
-			entry = ddpg.buffer.get_batch(unbalance_p=UNBALANCE_P)
-			c, a = ddpg.learn(entry)
+		if dql.can_train():
+			entry = dql.buffer.get_batch(unbalance_p=UNBALANCE_P)
+			q = dql.learn(entry)
 
 		if done:
 			break
@@ -81,10 +76,10 @@ for epoch in range(EPOCHS):
 		SAVE_WEIGHTS and
 		epoch >= 5):
 
-		ddpg.save_weights(CHECKPOINTS_PATH)
+		dqn.save_weights(CHECKPOINTS_PATH)
 
 env.close()
-ddpg.save_weights(CHECKPOINTS_PATH)
+dqn.save_weights(CHECKPOINTS_PATH)
 logging.info("Training done...")
 
 plt.plot(avg_reward_list)
