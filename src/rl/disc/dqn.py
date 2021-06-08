@@ -11,7 +11,7 @@ from rl.utils import OUActionNoise, ReplayBuffer
 
 class QNetwork(Model):
 
-	def __init__(self, states, actions, action_max):
+	def __init__(self, states, actions):
 		
 		last_init = tf.random_normal_initializer(stddev=0.0005)
 
@@ -27,7 +27,7 @@ class QNetwork(Model):
 		outputs = tf.keras.layers.Dense(
 					actions,
 					activation="tanh",
-					kernel_initializer=last_init)(out) * action_max
+					kernel_initializer=last_init)(out)
 
 		super().__init__(inputs, outputs)
 
@@ -43,20 +43,18 @@ def update_target(target, ref, rho=0):
 class DQL:
 
 	def __init__(
-		self, num_states, num_actions, action_high, 
-		action_low, gamma=GAMMA, rho=RHO, std_dev=STD_DEV
+		self, num_states, num_actions,
+		gamma=GAMMA, rho=RHO, std_dev=STD_DEV
 	):
 		
 		# initialize Actor and Critic networks (Main)
 		self.dqn = QNetwork(
 			num_states,
-			num_actions,
-			action_high
+			num_actions
 		)
 		self.dqn_target = QNetwork(
 			num_states,
-			num_actions,
-			action_high
+			num_actions
 		)
 
 		weights = self.dqn.get_weights()
@@ -65,8 +63,6 @@ class DQL:
 		self.buffer = ReplayBuffer(BUFFER_SIZE, BATCH_SIZE)
 		self.gamma = tf.constant(gamma)
 		self.rho = rho
-		self.action_high = action_high
-		self.action_low = action_low
 		self.num_states = num_states
 		self.num_actions = num_actions
 		self.noise = OUActionNoise(
@@ -125,9 +121,7 @@ class DQL:
 		self.update_weights = update_weights
 
 	def act(self, state, _notrandom=True):
-		_random = np.random.uniform(self.action_low,
-									self.action_high,
-									self.num_actions)
+		state = tf.convert_to_tensor([state], dtype=tf.float32)
 		q_value = self.dqn(state)[0].numpy()
 		if _notrandom:
 			self.cur_action = np.argmax(q_value)
@@ -138,6 +132,13 @@ class DQL:
 	def remember(self, prev_state, reward, state, done):
 		# record it in the buffer based on its reward
 		self.buffer.append(prev_state, self.cur_action, reward, state, done)
+
+	def can_train(self):
+		memory = len(self.buffer.buffer)
+		if memory > BATCH_SIZE:
+			return True
+		else:
+			return False
 
 	def learn(self, entry):
 		s,a,r,sn,d = zip(*entry)
