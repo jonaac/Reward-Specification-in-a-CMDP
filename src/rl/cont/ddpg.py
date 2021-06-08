@@ -13,22 +13,37 @@ class ActorNetwork(Model):
 
 	def __init__(self, states, actions, action_max):
 
+		super(ActorNetwork, self).__init__()
+
+		self.action_max = action_max
+
 		last_init = tf.random_normal_initializer(stddev=0.0005)
 
-		inputs = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
-		out = tf.keras.layers.Dense(
-				600,
-				activation=tf.nn.leaky_relu,
-				kernel_initializer=KERNEL_INITIALIZER)(inputs)
-		out = tf.keras.layers.Dense(
-				300,
-				activation=tf.nn.leaky_relu,
-				kernel_initializer=KERNEL_INITIALIZER)(out)
-		outputs = tf.keras.layers.Dense(
-					actions,
-					activation="tanh",
-					kernel_initializer=last_init)(out) * action_max
-		super().__init__(inputs, outputs)
+		self.inputs = tf.keras.layers.Dense(states)
+		
+		self.layer_1 = tf.keras.layers.Dense(
+			600,
+			activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER
+		)
+		
+		self.layer_2 = tf.keras.layers.Dense(
+			300,
+			activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER
+		)
+		
+		self.outputs = tf.keras.layers.Dense(
+			actions,
+			activation="tanh",
+			kernel_initializer=last_init
+		)
+	
+	def call(self, entry):
+		inputs = self.inputs(entry)
+		layer_1 = self.layer_1(inputs)
+		layer_2 = self.layer_2(layer_1)
+		return self.outputs(layer_2) * self.action_max
 
 class CriticNetwork(Model):
 
@@ -166,7 +181,8 @@ class DDPG:
 									self.num_actions)
 		_noise = (self.noise() if noise else 0)
 		if _notrandom:
-			self.cur_action = self.actor_network(state)[0].numpy() 
+			state = tf.convert_to_tensor([state], dtype=tf.float32)
+			self.cur_action = self.actor_network(state)[0].numpy()
 		else:
 			self.cur_action = _random
 		self.cur_action += _noise
@@ -180,6 +196,13 @@ class DDPG:
 	def remember(self, prev_state, reward, state, done):
 		# record it in the buffer based on its reward
 		self.buffer.append(prev_state, self.cur_action, reward, state, done)
+
+	def can_train(self):
+		memory = len(self.buffer.buffer)
+		if memory > BATCH_SIZE:
+			return True
+		else:
+			return False
 
 	def learn(self, entry):
 		s,a,r,sn,d = zip(*entry)
