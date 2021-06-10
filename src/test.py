@@ -1,13 +1,18 @@
-import gym
-import time
-start_time = time.time()
+import matplotlib.pyplot as plt
 
-env = gym.make('HalfCheetah-v3')
-for i_episode in range(1000):
-    observation = env.reset()
-    for t in range(1000):
-        action = env.action_space.sample()
-        observation, reward, done, info = env.step(action)
-        if done:
-            break
-print("--- %s seconds ---" % (time.time() - start_time))
+f = open('results.txt')
+lines = [l.rstrip() for l in f]
+f.close()
+
+avg_r = []
+
+for line in lines:
+	if 'Average Reward' in line:
+		text, n = line.split(': ')
+		n = float(n)
+		avg_r.append(n)
+
+plt.plot(avg_r)
+plt.xlabel("Episode")
+plt.ylabel("Avg. Epsiodic Reward")
+plt.show()

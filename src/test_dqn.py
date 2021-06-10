@@ -2,16 +2,19 @@ import time
 import sys
 import psutil
 
-import envs, gym, rl
-gym.logger.set_level(40)
+import envs
+import gym
+import rl
 
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from rl.disc.dqn import DQL
 from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES, 
 							TF_LOG_DIR, UNBALANCE_P)
 
+gym.logger.set_level(40)
 SAVE_WEIGHTS = True
 
 env = gym.make('Safe-Water-World-v0')
@@ -32,7 +35,7 @@ ep_reward_list = []
 avg_reward_list = []
 
 
-EPOCHS = 100
+EPOCHS = 1000
 T = 600
 
 print('Start Training')
@@ -42,45 +45,45 @@ for epoch in range(EPOCHS):
 	s = env.reset()
 	acc_reward.reset_states()
 	dql.noise.reset()
-	start_time = time.time()
 	print('Epoch #' + str(epoch))
+	time_load = []
+	time_train = []
 
-	for i in range(T):
+	for t in range(T):
 		a, q_l = dql.act(s)
 		sn, r, _, done, info = env.step(a)
-		brain = dql.remember(s,r,sn,int(done))
+		dql.remember(s,r,sn,int(done))
 
 		if dql.can_train():
 			entry = dql.buffer.get_batch(unbalance_p=UNBALANCE_P)
 			q = dql.learn(entry)
 
-		if done:
-			break
-
 		acc_reward(r)
 		s = sn
 
-	print(psutil.virtual_memory().percent)
+		if done:
+			print("Episode finished after {} timesteps".format(t+1))
+			break
+
+	# print(psutil.virtual_memory().percent)
 
 	ep_reward_list.append(acc_reward.result().numpy())
 	# Mean of reward obtained in last 40 steps fo training
-	avg_reward = np.mean(ep_reward_list[-40:])
-	print('Average Reward of last 40 steps: ' + str(avg_reward))
-	# add to list to plot
-	avg_reward_list.append(avg_reward)
-
-	print("--- %s seconds ---" % (time.time() - start_time))
+	if epoch >= 40:
+		avg_reward = np.mean(ep_reward_list[-40:])
+		print('Average Reward of last 40 steps: ' + str(avg_reward))
+		# add to list to plot
+		avg_reward_list.append(avg_reward)
 
 	# save weights
 	if (epoch % 5 == 0 and
 		SAVE_WEIGHTS and
 		epoch >= 5):
 
-		dqn.save_weights(CHECKPOINTS_PATH)
+		dql.save_weights(CHECKPOINTS_PATH)
 
 env.close()
-dqn.save_weights(CHECKPOINTS_PATH)
-logging.info("Training done...")
+dql.save_weights(CHECKPOINTS_PATH)
 
 plt.plot(avg_reward_list)
 plt.xlabel("Episode")
