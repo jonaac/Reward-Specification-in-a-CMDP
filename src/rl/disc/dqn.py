@@ -151,7 +151,7 @@ class DQL:
 			tf.convert_to_tensor(d,dtype=tf.float32)
 		)
 
-		#update_target(self.dqn_target, self.dqn, self.rho)
+		update_target(self.dqn_target, self.dqn, self.rho)
 
 		return q_l
 
