@@ -18,7 +18,7 @@ class RewardMachine:
 
 	def step(self, u1, true_props, s_info={}):
 		u2 = self._update_state(u1, true_props)
-		done = (u2 == -1)
+		done = (u2 == -1 or u2 in self.T)
 		rew = self._get_reward(u1,u2,s_info)
 		c = self._get_cost(u1,u2,s_info)
 		return u2, rew, c, done 
