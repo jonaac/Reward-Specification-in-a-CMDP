@@ -73,8 +73,14 @@ class RewardMachineEnv(gym.Wrapper):
 		# getting the output of the detectors and saving information for 
 		# generating counterfactual experiences
 		true_props = self.env.get_events()
+		if true_props != '': 
+			#print(true_props)
+			pass
+
 		self.crm_params = self.obs, action, next_obs, env_done, true_props, info
 		self.obs = next_obs
+
+		old_u_id = self.current_u_id
 
 		# update the RM state
 		self.current_u_id, rm_r, rm_c, rm_done = self.current_rm.step(
@@ -82,6 +88,8 @@ class RewardMachineEnv(gym.Wrapper):
 													true_props,
 													info
 												)
+
+		#print("{} -> {}".format(old_u_id,self.current_u_id))
 
 		# returning the result of this action
 		done = rm_done or env_done
