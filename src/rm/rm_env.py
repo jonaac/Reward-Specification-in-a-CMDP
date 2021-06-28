@@ -1,22 +1,24 @@
 import gym
 from gym import spaces
 import numpy as np
-from rm.rm import RewardMachine
+from rm.rm import SafetyMachine
 
 
 class RewardMachineEnv(gym.Wrapper):
-	def __init__(self, env, rm_files):
+	def __init__(self, env, sm_files):
 		super().__init__(env)
 
 		# Loading the reward machines
-		self.rm_files = rm_files
-		self.reward_machines = [] # list of reward machines
+		self.sm_files = sm_files
+		self.safety_machines = [] # list of safety machines
 		self.num_rm_states = 0 # number of total rm states
-		for rm_file in rm_files:
-			rm = RewardMachine(rm_file)
-			self.num_rm_states += len(rm.get_states()) 
-			self.reward_machines.append(rm)
-		self.num_rms = len(self.reward_machines) # number reward machines
+		self.num_cm_states = 0 # number of total cm states
+		for rm_file, cm_file in rm_files:
+			sm = SafetyMachine(rm_file, cm_file)
+			self.num_rm_states += len(sm.get_rm_states())
+			self.num_cm_states += len(sm.get_cm_states())
+			self.safety_machines.append(sm)
+		self.num_sm = len(self.safety_machines) # number safety machines
 
 		# The observation space is a dictionary including the env features and 
 		# a one-hot representation of the state in the reward machine
@@ -27,10 +29,18 @@ class RewardMachineEnv(gym.Wrapper):
 			shape=(self.num_rm_states,), 
 			dtype=np.uint8
 		)
+		cm_s = spaces.Box(
+			low=0,
+			high=1, 
+			shape=(self.num_cm_states,), 
+			dtype=np.uint8
+		)
 		self.observation_dict  = spaces.Dict({
 									'features':feat,
-									'rm-state':rm_s
+									'rm-state':rm_s,
+									'cm-state':cm_s
 								})
+		
 		flatdim = gym.spaces.flatdim(self.observation_dict)
 		s_low  = float(env.observation_space.low[0])
 		s_high = float(env.observation_space.high[0])
