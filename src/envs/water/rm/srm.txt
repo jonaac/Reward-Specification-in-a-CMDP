@@ -1,0 +1,11 @@
+1
+(0,0,None,'True',ConstantCost(0))
+(0,1,(1),'a|b|c|e|f',ConstantCost(1))
+(0,2,(2),'a|b|c|d|f',ConstantCost(1))
+(0,3,(3),'a|b|c|d|e',ConstantCost(1))
+(1,0,None,'!a&!b&!c&!e&!f',ConstantCost(0))
+(1,1,None,'a|b|c|e|f',ConstantCost(1))
+(2,0,None,'!a&!b&!c&!d&!f',ConstantCost(0))
+(2,2,None,'a|b|c|d|f',ConstantCost(1))
+(3,0,None,'!a&!b&!c&!d&!e',ConstantCost(0))
+(3,3,None,'a|b|c|d|e',ConstantCost(1))
