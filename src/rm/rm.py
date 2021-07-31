@@ -13,6 +13,13 @@ class SafetyMachine:
 	def get_cm_states(self)
 		return self.cm.U
 
+	def reset(self):
+		return (
+			self.rm.rest(),
+			self.cm.reset()
+		)
+
+
 class RewardMachine:
 
 	def __init__(self, file): # <U, u0, T, delta_u, delta_r>
@@ -149,6 +156,12 @@ class CostMachine:
 		done = (u2 == -1 or u2 in self.T)
 		d = self._get_cost(u1,u2,s_info)
 		return u2, d, done
+
+	def get_states(self):
+		return self.U
+
+	def reset(self):
+		return self.u0
 
 	# Private Methods --------------------------------------------------------
 
