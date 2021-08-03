@@ -1,7 +1,10 @@
 import gym
 import numpy as np
 from gym.envs.mujoco.half_cheetah_v3 import HalfCheetahEnv
-from rm.rm_env import RewardMachineEnv
+
+from machines.nm_env import NoMachineEnv
+from machines.rm_env import RewardMachineEnv
+from machines.sm_env import SafetyMachineEnv
 
 class HalfCheetahSafeEnv(gym.Wrapper):
 	def __init__(self):

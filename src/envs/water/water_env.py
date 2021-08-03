@@ -1,15 +1,20 @@
 import gym
 from gym import spaces
 import numpy as np
-from rm.rm_env import RewardMachineEnv
+
+from machines.nm_env import NoMachineEnv
+from machines.rm_env import RewardMachineEnv
+from machines.sm_env import SafetyMachineEnv
+
 from envs.water.water_world import WaterWorld, WaterWorldParams
 
 class WaterEnv(gym.Env):
 	def __init__(self, state_file):
+		
 		params = WaterWorldParams(
 			state_file, b_radius=15, max_x=400, 
-			max_y=400, b_num_per_color=2, use_velocities=True
-		)
+			max_y=400, b_num_per_color=2, use_velocities=True)
+		
 		self.params = params
 
 		self.action_space = spaces.Discrete(5) # noop, up, right, down, left
@@ -33,18 +38,26 @@ class WaterEnv(gym.Env):
 		self.env.reset()
 		return self.env.get_features()
 
-# SINGLE TASK --------------------------------------------------------------------------------------------------
-
-
-class WaterEnvRM(RewardMachineEnv):
+class WaterEnvNoM(NoMachineEnv):
+	
 	def __init__(self):
 		env = WaterEnv(None)
 		rm_files = ["./envs/water/rm/rm.txt"]
-		super().__init__(env, rm_files)
+		cm_files = ["./envs/water/rm/cm.txt"]
+		super().__init__(env, rm_files, cm_files)
 
-	def render(self, mode='human'):
-		if mode == 'human':
-			# add play(self) to water_world.py
-			raise NotImplementedError
-		else:
-			raise NotImplementedError
+class WaterEnvRM(RewardMachineEnv):
+	
+	def __init__(self):
+		env = WaterEnv(None)
+		rm_files = ["./envs/water/rm/rm.txt"]
+		cm_files = ["./envs/water/rm/cm.txt"]
+		super().__init__(env, rm_files, cm_files)
+
+class WaterEnvSM(SafetyMachineEnv):
+	
+	def __init__(self):
+		env = WaterEnv(None)
+		rm_files = ["./envs/water/rm/rm.txt"]
+		cm_files = ["./envs/water/rm/cm.txt"]
+		super().__init__(env, rm_files, cm_files)

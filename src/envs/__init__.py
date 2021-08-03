@@ -2,7 +2,7 @@ from gym.envs.registration import register
 
 from envs.safety.safety_env import SafeEnv, SafeEnvRM
 from envs.halfcheetah.hc_env import HalfCheetahSafeEnv, HalfCheetahSafeEnvRM
-from envs.water.water_env import WaterEnv, WaterEnvRM
+from envs.water.water_env import WaterEnv, WaterEnvNoM, WaterEnvRM, WaterEnvSM
 # from envs.minecraft.minecraft_env import MineCraftEnv, MineCraftEnvRM
 
 __all__ = ["SafeEnvRM","HalfCheetahSafeEnvRM","WaterEnvRM"]
@@ -17,9 +17,16 @@ register(
 ### Water World Envs
 
 register(
-	id='Safe-Water-World-v0',
+	id='Safe-Water-World-NoMachine-v0',
+	entry_point='envs.water.water_env:WaterEnvNoM')
+
+register(
+	id='Safe-Water-World-RewardMachine-v0',
 	entry_point='envs.water.water_env:WaterEnvRM')
-	# max_episode_steps=600)
+
+register(
+	id='Safe-Water-World-SafetyMachine-v0',
+	entry_point='envs.water.water_env:WaterEnvSM')
 
 ### Half Cheetah Envs
 

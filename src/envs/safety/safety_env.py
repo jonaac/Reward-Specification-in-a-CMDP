@@ -3,7 +3,10 @@ import enum
 import gym
 
 from safety_gym.envs.engine import Engine
-from rm.rm_env import RewardMachineEnv
+
+from machines.nm_env import NoMachineEnv
+from machines.rm_env import RewardMachineEnv
+from machines.sm_env import SafetyMachineEnv
 
 class zone(enum.Enum):
 	JetBlack 	= 0
