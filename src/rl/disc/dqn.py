@@ -15,47 +15,37 @@ class QNetwork(Model):
 		
 		last_init = tf.random_normal_initializer(stddev=0.0005)
 
-		inputs = tf.keras.layers.Input(shape=(states,), dtype=tf.float32)
+		inputs = tf.keras.layers.Input(
+			shape=(states,),
+			dtype=tf.float32)
 		out = tf.keras.layers.Dense(
-				600,
-				activation=tf.nn.leaky_relu,
-				kernel_initializer=KERNEL_INITIALIZER)(inputs)
+			600,
+			activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(inputs)
 		out = tf.keras.layers.Dense(
-				300,
-				activation=tf.nn.leaky_relu,
-				kernel_initializer=KERNEL_INITIALIZER)(out)
+			300,
+			activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(out)
 		outputs = tf.keras.layers.Dense(
-					actions,
-					activation="tanh",
-					kernel_initializer=last_init)(out)
+			actions,
+			activation="tanh",
+			kernel_initializer=last_init)(out)
 
 		super().__init__(inputs, outputs)
-
-def update_target(target, ref, rho=0):
-	weights = []
-	old_weights = list(zip(target.get_weights(), ref.get_weights()))
-	for (target_weight, ref_weight) in old_weights:
-		w = rho * ref_weight + (1 - rho) * target_weight
-		weights.append(w)
-
-	target.set_weights(weights)
 
 class DQL:
 
 	def __init__(
-		self, num_states, num_actions,
-		gamma=GAMMA, rho=RHO, std_dev=STD_DEV
-	):
+			self, num_states, num_actions,
+			gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
 		
 		# initialize Actor and Critic networks (Main)
 		self.dqn = QNetwork(
 			num_states,
-			num_actions
-		)
+			num_actions)
 		self.dqn_target = QNetwork(
 			num_states,
-			num_actions
-		)
+			num_actions)
 
 		weights = self.dqn.get_weights()
 		self.dqn_target.set_weights(weights)
@@ -100,7 +90,7 @@ class DQL:
 
 				# Compute Q(s,a)
 				q_values = self.dqn(s)
-				one_hot = tf.one_hot(a, self.num_actions) 
+				one_hot = tf.one_hot(a, self.num_actions)
 				q_value = one_hot * q_values
 				q_value = tf.reduce_sum(q_value, axis = 1)
 
@@ -151,7 +141,7 @@ class DQL:
 			tf.convert_to_tensor(d,dtype=tf.float32)
 		)
 
-		update_target(self.dqn_target, self.dqn, self.rho)
+		self.update_target(self.dqn_target, self.dqn, self.rho)
 
 		return q_l
 
@@ -171,3 +161,12 @@ class DQL:
 		except:
 			return "Weights cannot be loaded"
 		return "Weights loaded"
+
+	def update_target(self, target, ref, rho=0):
+		weights = []
+		old_weights = list(zip(target.get_weights(), ref.get_weights()))
+		for (target_weight, ref_weight) in old_weights:
+			w = rho * ref_weight + (1 - rho) * target_weight
+			weights.append(w)
+
+		target.set_weights(weights)
