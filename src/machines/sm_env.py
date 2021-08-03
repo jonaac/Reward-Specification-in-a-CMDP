@@ -1,19 +1,19 @@
 import gym
 from gym import spaces
 import numpy as np
-from rm.rm import SafetyMachine
+from machines.machines import SafetyMachine
 
 
-class RewardMachineEnv(gym.Wrapper):
-	def __init__(self, env, sm_files):
+class SafetyMachineEnv(gym.Wrapper):
+	
+	def __init__(self, env, rm_files, cm_files):
 		super().__init__(env)
 
 		# Loading the reward machines
-		self.sm_files = sm_files
 		self.safety_machines = [] # list of safety machines
 		self.num_rm_states = 0 # number of total rm states
 		self.num_cm_states = 0 # number of total cm states
-		for rm_file, cm_file in sm_files:
+		for rm_file, cm_file in zip(rm_files, cm_files):
 			sm = SafetyMachine(rm_file, cm_file)
 			self.num_rm_states += len(sm.get_rm_states())
 			self.num_cm_states += len(sm.get_cm_states())
@@ -35,6 +35,12 @@ class RewardMachineEnv(gym.Wrapper):
 			shape=(self.num_cm_states,), 
 			dtype=np.uint8
 		)
+
+		print("Safety Machine Environment")
+		print("WaterWorld Observation Space: {}".format(feat.shape[0]))
+		print("Reward Machine Observation Space: {}".format(rm_s.shape[0]))
+		print("Cost Machine Observation Space: {}".format(cm_s.shape[0]))
+
 		self.observation_dict  = spaces.Dict({
 									'features':feat,
 									'rm-state':rm_s,
@@ -77,12 +83,12 @@ class RewardMachineEnv(gym.Wrapper):
 		self.obs = self.env.reset()
 		self.current_sm_id = (self.current_sm_id+1)%self.num_sm
 		self.current_sm = self.safety_machines[self.current_sm_id]
-		self.current_rm_u_id, current_cm_u_id = self.current_sm.reset()
+		self.current_rm_u_id, self.current_cm_u_id = self.current_sm.reset()
 
 		# Adding the RM state to the observation
 		return self.get_observation(self.obs, 
 									self.current_sm_id,
-									self.current_rm_u_id
+									self.current_rm_u_id,
 									self.current_cm_u_id,
 									False)
 
@@ -93,11 +99,7 @@ class RewardMachineEnv(gym.Wrapper):
 		# getting the output of the detectors and saving information for 
 		# generating counterfactual experiences
 		true_props = self.env.get_events()
-
-		self.crm_params = self.obs, action, next_obs, env_done, true_props, info
 		self.obs = next_obs
-
-		old_u_id = self.current_u_id
 
 		# update the RM state
 		self.current_rm_u_id, r, rm_done = self.current_sm.rm.step(
@@ -125,7 +127,7 @@ class RewardMachineEnv(gym.Wrapper):
 
 	def get_observation(self, next_obs, sm_id, rm_u_id, cm_u_id, done):
 		if done:
-			rm_feat = self.sm_done_feat
+			rm_feat = self.rm_done_feat
 			cm_feat = self.cm_done_feat
 		else:
 			rm_feat = self.rm_state_features[(sm_id,rm_u_id)]

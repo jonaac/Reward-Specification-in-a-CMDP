@@ -1,5 +1,5 @@
-from rm.rm_reward import *
-from rm.rm_cost import *
+from machines.rm_reward import *
+from machines.cm_cost import *
 
 class SafetyMachine:
 
@@ -7,10 +7,10 @@ class SafetyMachine:
 		self.rm = RewardMachine(rm_file)
 		self.cm = CostMachine(cm_file)
 
-	def get_rm_states(self)
+	def get_rm_states(self):
 		return self.rm.U
 	
-	def get_cm_states(self)
+	def get_cm_states(self):
 		return self.cm.U
 
 	def reset(self):

@@ -17,17 +17,14 @@ from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES,
 gym.logger.set_level(40)
 SAVE_WEIGHTS = True
 
-env = gym.make('Safe-Water-World-v0')
+env = gym.make('Safe-Water-World-NoMachine-v0')
 observation_space = env.observation_space.shape[0]
 action_space = env.action_space.n
 
 dql = DQL(observation_space, action_space)
 
 # weighted sum of rewards for each epoch
-acc_reward = tf.keras.metrics.Sum('reward', dtype=tf.float32)
-# mean of critic and actor loss values
-Q_loss = tf.keras.metrics.Mean('Q_loss', dtype=tf.float32)
-A_loss = tf.keras.metrics.Mean('A_loss', dtype=tf.float32)
+acc_reward = tf.keras.metrics.Sum('reward',dtype=tf.float32)
 
 # To store reward history of each episode
 ep_reward_list = []
@@ -88,6 +85,4 @@ dql.save_weights(CHECKPOINTS_PATH)
 plt.plot(avg_reward_list)
 plt.xlabel("Episode")
 plt.ylabel("Avg. Epsiodic Reward")
-# Plotting graph, Episodes versus Avg. Rewards
 plt.show()
-
