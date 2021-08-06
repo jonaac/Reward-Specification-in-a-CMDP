@@ -48,7 +48,7 @@ for epoch in range(EPOCHS):
 
 	for t in range(T):
 		a, q_l = dql.act(s)
-		sn, r, _, done, info = env.step(a)
+		sn, r, d, done, info = env.step(a)
 		dql.remember(s,r,sn,int(done))
 
 		if dql.can_train():
