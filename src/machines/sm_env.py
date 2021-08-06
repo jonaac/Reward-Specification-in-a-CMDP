@@ -99,7 +99,14 @@ class SafetyMachineEnv(gym.Wrapper):
 		# getting the output of the detectors and saving information for 
 		# generating counterfactual experiences
 		true_props = self.env.get_events()
+		self.crm_params = 
+			self.obs, self.current_cm_u_id,
+			action, next_obs, 
+			env_done, true_props, info
 		self.obs = next_obs
+
+		crm_experience = self._get_crm_experience(*self.crm_params)
+		info["crm-experience"] = crm_experience
 
 		# update the RM state
 		self.current_rm_u_id, r, rm_done = self.current_sm.rm.step(
@@ -140,3 +147,37 @@ class SafetyMachineEnv(gym.Wrapper):
 		}
 
 		return gym.spaces.flatten(self.observation_dict, sm_obs)
+
+	def _get_rm_experience(
+			self, sm_id, sm, rm_u_id, cm_u_id, obs,
+			action, next_obs, env_done, true_props, info):
+		# execute action and return experience
+		sm_obs = self.env.get_observation(obs, sm_id, rm_u_id, cm_u_id, False)
+		
+		next_rm_u_id, rm_r, rm_done = sm.rm.step(rm_u_id, true_props, info)
+		next_cm_u_id, cm_d, cm_done = sm.cm.step(cm_u_id,true_props,info)
+		
+		done = rm_done or env_done or cm_done
+		sm_next_obs = self.env.get_observation(
+			next_obs,
+			sm_id,
+			next_rm_u_id,
+			next_cm_u_id,
+			done
+		)
+		
+		return (sm_obs,action,rm_r,cm_d,sm_next_obs,done)
+
+	def _get_crm_experience(
+			self, obs, cm_u_id, action, next_obs,
+			env_done, true_props, info):
+		experiences = []
+		for sm_id, sm in enumerate(self.SafetyMachine):
+			for rm_u_id in sm.rm.get_states():
+				exp = self._get_rm_experience(
+					sm_id, sm, rm_u_id, cm_u_id, obs, action,
+					next_obs, env_done, true_props, info
+				)
+				experiences.append(exp)
+
+		return experiences
