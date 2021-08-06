@@ -262,20 +262,3 @@ class CostMachine:
 			u2 in self.delta_d[u1]):
 			cost += self.delta_d[u1][u2].get_cost(s_info)
 		return cost
-
-if __name__ == "__main__":
-	# execute only if run as a script
-	files = [
-		'../envs/water/rm/rm.txt',
-		'../envs/water/rm/srm.txt'
-	]
-	rm = RewardMachine(files[0])
-	srm = CostMachine(files[1])
-
-	new_u, cost, done = srm.step(0,2,'e')
-	print('Transition to: {}'.format(new_u))
-	print('Cost of transition: {}'.format(cost))
-	if done:
-		print('Done')
-	else:
-		print('Not Done')
