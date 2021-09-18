@@ -6,6 +6,6 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from rl.cont.sddpg import SDDPG
+from rl.disc.dqn import DQL
 
 print('Hello Google Drive')
