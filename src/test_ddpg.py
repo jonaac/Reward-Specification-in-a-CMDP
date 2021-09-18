@@ -10,8 +10,8 @@ import numpy as np
 import tensorflow as tf
 
 from rl.cont.ddpg import DDPG
-from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES, 
-								TF_LOG_DIR, UNBALANCE_P)
+from rl.dqn_parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES,
+							   TF_LOG_DIR, UNBALANCE_P)
 
 SAVE_WEIGHTS = True
 

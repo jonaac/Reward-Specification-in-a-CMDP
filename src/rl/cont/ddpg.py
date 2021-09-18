@@ -92,11 +92,12 @@ def update_target(target, ref, rho=0):
 
 
 class DDPG:
-	def __init__(self, num_states, num_actions, action_high, 
-				action_low, gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
+	def __init__(
+			self, num_states, num_actions, action_high,
+			action_low, gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
 		
 		# initialize Actor and Critic networks (Main)
-		self.actor_network = ActorNetwork(num_states,  num_actions, action_high)
+		self.actor_network = ActorNetwork(num_states, num_actions, action_high)
 		self.critic_network = CriticNetwork(num_states,
 											num_actions,
 											action_high)
@@ -121,8 +122,8 @@ class DDPG:
 			std_deviation=float(std_dev) * np.ones(1))
 
 		# optimizers
-		self.critic_optimizer = tf.keras.optimizers.Adam(CRITIC_LR,amsgrad=True)
-		self.actor_optimizer = tf.keras.optimizers.Adam(ACTOR_LR,amsgrad=True)
+		self.critic_optimizer = tf.keras.optimizers.Adam(CRITIC_LR, amsgrad=True)
+		self.actor_optimizer = tf.keras.optimizers.Adam(ACTOR_LR, amsgrad=True)
 
 		# temporary variable for side effects
 		self.cur_action = None

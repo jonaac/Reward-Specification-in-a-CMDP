@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 
-from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
+from rl.dqn_parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV,
 							BUFFER_SIZE, BATCH_SIZE, Q_LR)
 from rl.utils import OUActionNoise, ReplayBuffer
 
