@@ -84,17 +84,18 @@ class ReplayBuffer:
 		# temp variables
 		self.p_indices = [BUFFER_UNBALANCE_GAP/2]
 
-	def append(self, state, action, r, sn, d):
+	def append(self, state, action, r, d, sn, done):
 		"""
 		Append to the Buffer
 		Args:
 			state: the state
 			action: the action
 			r: the reward
+			d: the cost
 			sn: the next state
-			d: done (whether one loop is done or not)
+			done: whether one loop is done or not
 		"""
-		self.buffer.append([state, action, np.expand_dims(r, -1), sn, np.expand_dims(d, -1)])
+		self.buffer.append([state, action, np.expand_dims(r, -1), np.expand_dims(d, -1), sn, np.expand_dims(done, -1)])
 
 	def get_batch(self, unbalance_p=True):
 		"""

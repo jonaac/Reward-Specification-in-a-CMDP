@@ -11,7 +11,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from rl.disc.dqn import DQL
-from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES, 
+from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES,
 							TF_LOG_DIR, UNBALANCE_P)
 
 gym.logger.set_level(40)
@@ -23,8 +23,13 @@ action_space = env.action_space.n
 
 dql = DQL(observation_space, action_space)
 
+s = env.reset()
+print(s.shape)
+
+exit()
 # weighted sum of rewards for each epoch
 acc_reward = tf.keras.metrics.Sum('reward',dtype=tf.float32)
+acc_cost = tf.keras.metrics.Sum('cost',dtype=tf.float32)
 
 # To store reward history of each episode
 ep_reward_list = []
@@ -32,8 +37,8 @@ ep_reward_list = []
 avg_reward_list = []
 
 
-EPOCHS = 1000
-T = 600
+EPOCHS = 2000
+T = 500
 
 print('Start Training')
 print('--------------')
@@ -41,6 +46,7 @@ print('--------------')
 for epoch in range(EPOCHS):
 	s = env.reset()
 	acc_reward.reset_states()
+	acc_cost.reset_states()
 	dql.noise.reset()
 	print('Epoch #' + str(epoch))
 	time_load = []
@@ -49,20 +55,24 @@ for epoch in range(EPOCHS):
 	for t in range(T):
 		a, q_l = dql.act(s)
 		sn, r, d, done, info = env.step(a)
-		dql.remember(s,r,sn,int(done))
+
+		if crm:
+			experiences = info['crm-experience']
+			dql.remember(experiences)
+		else:
+			dql.remember(s,a,r,d,sn,int(done))
 
 		if dql.can_train():
 			entry = dql.buffer.get_batch(unbalance_p=UNBALANCE_P)
 			q = dql.learn(entry)
 
 		acc_reward(r)
+		acc_cost(d)
 		s = sn
 
 		if done:
 			print("Episode finished after {} timesteps".format(t+1))
 			break
-
-	# print(psutil.virtual_memory().percent)
 
 	ep_reward_list.append(acc_reward.result().numpy())
 	# Mean of reward obtained in last 40 steps fo training

@@ -8,15 +8,17 @@ from tensorflow.keras import Model
 from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
 							BUFFER_SIZE, BATCH_SIZE, Q_LR)
 from rl.utils import OUActionNoise, ReplayBuffer
-from rl.disc.dqn import QNetwork, DQL
+from rl.disc.dqn import ActorNetwork, CriticNetwork, DDPG
 
-class DQRM(DQL):
+class DDPGRM(DDPG):
 
 	def __init__(
-			self, num_states, num_actions,
+			self, num_states, num_actions, action_high,
 			gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
 		
-		super().__init__(num_states, num_actions, GAMMA, RHO, STD_DEV)
+		super().__init__(
+			num_states, num_actions, action_high,
+			GAMMA, RHO, STD_DEV)
 
 
 	def remember(self, experiences):

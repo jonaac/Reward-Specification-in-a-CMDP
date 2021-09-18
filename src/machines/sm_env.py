@@ -99,10 +99,7 @@ class SafetyMachineEnv(gym.Wrapper):
 		# getting the output of the detectors and saving information for 
 		# generating counterfactual experiences
 		true_props = self.env.get_events()
-		self.crm_params = 
-			self.obs, self.current_cm_u_id,
-			action, next_obs, 
-			env_done, true_props, info
+		self.crm_params = self.obs, self.current_cm_u_id, action, next_obs, env_done, true_props, info
 		self.obs = next_obs
 
 		crm_experience = self._get_crm_experience(*self.crm_params)

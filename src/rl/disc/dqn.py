@@ -19,11 +19,15 @@ class QNetwork(Model):
 			shape=(states,),
 			dtype=tf.float32)
 		out = tf.keras.layers.Dense(
-			600,
+			1024,
 			activation=tf.nn.leaky_relu,
 			kernel_initializer=KERNEL_INITIALIZER)(inputs)
 		out = tf.keras.layers.Dense(
-			300,
+			1024,
+			activation=tf.nn.leaky_relu,
+			kernel_initializer=KERNEL_INITIALIZER)(out)
+		out = tf.keras.layers.Dense(
+			1024,
 			activation=tf.nn.leaky_relu,
 			kernel_initializer=KERNEL_INITIALIZER)(out)
 		outputs = tf.keras.layers.Dense(
@@ -68,7 +72,7 @@ class DQL:
 		# define update weights
 		@tf.function(input_signature=[
 			tf.TensorSpec(shape=(None, self.num_states), dtype=tf.float32),
-			tf.TensorSpec(shape=(None, ), dtype=tf.int64),
+			tf.TensorSpec(shape=(None, self.num_actions), dtype=tf.int64),
 			tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
 			tf.TensorSpec(shape=(None, self.num_states), dtype=tf.float32),
 			tf.TensorSpec(shape=(None, 1), dtype=tf.float32)
@@ -131,14 +135,14 @@ class DQL:
 			return False
 
 	def learn(self, entry):
-		s,a,r,sn,d = zip(*entry)
+		s,a,r,_,sn,done = zip(*entry)
 
 		q_l = self.update_weights(	
 			tf.convert_to_tensor(s,dtype=tf.float32),
 			tf.convert_to_tensor(a,dtype=tf.int64),
 			tf.convert_to_tensor(r,dtype=tf.float32),
 			tf.convert_to_tensor(sn,dtype=tf.float32),
-			tf.convert_to_tensor(d,dtype=tf.float32)
+			tf.convert_to_tensor(done,dtype=tf.float32)
 		)
 
 		self.update_target(self.dqn_target, self.dqn, self.rho)

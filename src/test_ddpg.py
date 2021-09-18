@@ -52,8 +52,12 @@ for epoch in range(EPOCHS):
 
 	for i in range(T):
 		a = ddpg.act(s)
-		sn, r, _, done, info = env.step(a)
-		brain = ddpg.remember(s,r,sn,int(done))
+		sn, r, d, done, info = env.step(a)
+		if crm:
+			experiences = info['crm-experience']
+			dql.remember(experiences)
+		else:
+			dql.remember(s,r,d,sn,int(done))
 
 		if ddpg.can_train():
 			entry = ddpg.buffer.get_batch(unbalance_p=UNBALANCE_P)
