@@ -39,6 +39,16 @@ class QNetwork(Model):
 		super().__init__(inputs, outputs)
 
 
+def update_target(self, target, ref, rho=0):
+	weights = []
+	old_weights = list(zip(target.get_weights(), ref.get_weights()))
+	for (target_weight, ref_weight) in old_weights:
+		w = rho * ref_weight + (1 - rho) * target_weight
+		weights.append(w)
+
+	target.set_weights(weights)
+
+
 class DQL:
 
 	def __init__(
@@ -137,7 +147,7 @@ class DQL:
 			return False
 
 	def learn(self, entry):
-		s,a,r,_,sn,done = zip(*entry)
+		s, a, r, _, sn, done = zip(*entry)
 
 		q_l = self.update_weights(	
 			tf.convert_to_tensor(s, dtype=tf.float32),
@@ -167,12 +177,3 @@ class DQL:
 		except:
 			return "Weights cannot be loaded"
 		return "Weights loaded"
-
-	def update_target(self, target, ref, rho=0):
-		weights = []
-		old_weights = list(zip(target.get_weights(), ref.get_weights()))
-		for (target_weight, ref_weight) in old_weights:
-			w = rho * ref_weight + (1 - rho) * target_weight
-			weights.append(w)
-
-		target.set_weights(weights)
