@@ -15,10 +15,9 @@ class SafetyMachine:
 
 	def reset(self):
 		return (
-			self.rm.rest(),
+			self.rm.reset	(),
 			self.cm.reset()
 		)
-
 
 class RewardMachine:
 

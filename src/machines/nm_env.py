@@ -50,7 +50,7 @@ class NoMachineEnv(gym.Wrapper):
 		self.current_rm_u_id, self.current_cm_u_id = self.current_sm.reset()
 
 		obs = {
-			'features': next_obs,
+			'features': self.obs,
 		}
 		return gym.spaces.flatten(self.observation_dict, obs)
 
@@ -82,4 +82,3 @@ class NoMachineEnv(gym.Wrapper):
 		obs = gym.spaces.flatten(self.observation_dict, obs)
 
 		return obs, r, d, done, info
-		
