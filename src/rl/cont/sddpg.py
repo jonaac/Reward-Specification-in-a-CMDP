@@ -1,5 +1,4 @@
 import os
-import sys
 from collections import deque
 
 import osqp
@@ -10,7 +9,6 @@ from tensorflow.keras import Model
 
 from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, BUFFER_SIZE,
 							BATCH_SIZE, Q_LR, NUM_STEPS, COST_BOUND)
-from rl.utils import OUActionNoise, ReplayBuffer
 from rl.cont.ddpg import ActorNetwork, CriticNetwork, DDPG
 
 
