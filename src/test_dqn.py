@@ -11,8 +11,9 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from rl.disc.dqn import DQL
-from rl.parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES,
-							TF_LOG_DIR, UNBALANCE_P)
+from rl.parameters import (
+	CHECKPOINTS_PATH, TOTAL_EPISODES,
+	TF_LOG_DIR, UNBALANCE_P)
 
 gym.logger.set_level(40)
 SAVE_WEIGHTS = True

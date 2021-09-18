@@ -14,7 +14,7 @@ import numpy as np
 from rm import RewardMachine
 '''
 from clrm import CLRM # Not Finished
-from parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES, 
+from parameters import (CHECKPOINTS_PATH, TOTAL_EPISODES,
 								TF_LOG_DIR, UNBALANCE_P)
 from utils import Tensorboard
 
@@ -126,8 +126,8 @@ if __name__ == "__main__":
 				eps_bool = EPS_GREEDY+(1-EPS_GREEDY)*ep/TOTAL_EPISODES
 				
 				# Recieve state and reward from environment.
-				cur_act = clrm.act(tf.expand_dims(prev_state, 0), 
-									_notrandom = (ep >= WARM_UP)
+				cur_act = clrm.act(tf.expand_dims(prev_state, 0),
+									_notrandom=(ep >= WARM_UP)
 									and (random.random() < eps_bool),
 									noise=USE_NOISE)
 				state, reward, done, _ = env.step(cur_act)

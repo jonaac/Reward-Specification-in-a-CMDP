@@ -13,8 +13,8 @@ from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, BUFFER_SIZE,
 from rl.utils import OUActionNoise, ReplayBuffer
 from rl.cont.ddpg import ActorNetwork, CriticNetwork, DDPG
 
-class CostNetwork(Model):
 
+class CostNetwork(Model):
 	def __init__(self, states, actions, action_max):
 		
 		last_init = tf.random_normal_initializer(stddev=0.00005)
@@ -49,6 +49,7 @@ class CostNetwork(Model):
 		# Outputs single value for given state-action
 		super().__init__([state_input, action_input], outputs)
 
+
 class SDDPG(DDPG):
 
 	def __init__(
@@ -80,7 +81,7 @@ class SDDPG(DDPG):
 			tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
 		])
 		def update_weights(s, a, r, d, sn, done):
-# ---------------------------------------------------------------------------- #
+			# ---------------------------------------------------------------------------- #
 			# Update Critic network
 			with tf.GradientTape() as tape:
 				tape.watch(self.critic_network.trainable_variables)
@@ -98,7 +99,7 @@ class SDDPG(DDPG):
 				self.critic_network.trainable_variables)
 			self.critic_optimizer.apply_gradients(
 				zip(critic_grad, self.critic_network.trainable_variables))
-# ---------------------------------------------------------------------------- #
+			# ---------------------------------------------------------------------------- #
 			# Update Cost Network
 			with tf.GradientTape() as tape:
 				tape.watch(self.cost_network.trainable_variables)
@@ -116,7 +117,7 @@ class SDDPG(DDPG):
 				self.cost_network.trainable_variables)
 			self.cost_optimizer.apply_gradients(
 				zip(cost_grad, self.cost_network.trainable_variables))
-# ---------------------------------------------------------------------------- #
+			# ---------------------------------------------------------------------------- #
 			# Update Actor network
 			with tf.GradientTape() as tape:
 				tape.watch(self.actor_network.trainable_variables)
@@ -157,10 +158,10 @@ class SDDPG(DDPG):
 			self.action_high)
 
 		# ------ Solve QP Problem ----------- #
-		I = sparse.identity(self.num_actions, format="csc") # [n,n]
+		I = sparse.identity(self.num_actions, format="csc")  # [n,n]
 
 		cost = self.cost_network([state, self.actor_network(state)])
-		e = ( (1 - self.gamma) * (COST_BOUND - cost) ).numpy()[0] # [1,]
+		e = ((1 - self.gamma) * (COST_BOUND - cost)).numpy()[0]  # [1,]
 
 		action = self.baseline_policy(state)
 		with tf.GradientTape() as tape:
@@ -170,14 +171,14 @@ class SDDPG(DDPG):
 				lyapunov_cost,
 				action).numpy() # [1,n]
 
-		cur_action = self.cur_action.T # [n,1]
+		cur_action = self.cur_action.T  # [n,1]
 
-		P = I # [n,n]
-		q = (- I @ cur_action).T[0] # [n,] = - [n,n] @ [n,1]
+		P = I  # [n,n]
+		q = (- I @ cur_action).T[0]  # [n,] = - [n,n] @ [n,1]
 
-		A = g # [1,n]
+		A = g  # [1,n]
 		A = sparse.csc_matrix(A)
-		u = e + (cur_action.T @ g.T)[0] # [1,] = [1,1] + ([1,n] @ [n,1])
+		u = e + (cur_action.T @ g.T)[0]  # [1,] = [1,1] + ([1,n] @ [n,1])
 		l = np.array([- np.inf])
 
 		prob = osqp.OSQP()
@@ -196,19 +197,19 @@ class SDDPG(DDPG):
 		return self.cur_action
 	
 	def learn(self, entry):
-		s,a,r,_,sn,done = zip(*entry)
+		s, a, r, _, sn, done = zip(*entry)
 
 		c_l, a_l, cost = self.update_weights(	
-			tf.convert_to_tensor(s,dtype=tf.float32),
-			tf.convert_to_tensor(a,dtype=tf.float32),
-			tf.convert_to_tensor(r,dtype=tf.float32),
-			tf.convert_to_tensor(sn,dtype=tf.float32),
-			tf.convert_to_tensor(done,dtype=tf.float32)
+			tf.convert_to_tensor(s, dtype=tf.float32),
+			tf.convert_to_tensor(a, dtype=tf.float32),
+			tf.convert_to_tensor(r, dtype=tf.float32),
+			tf.convert_to_tensor(sn, dtype=tf.float32),
+			tf.convert_to_tensor(done, dtype=tf.float32)
 		)
 
-		update_target(self.actor_target, self.actor_network, self.rho)
-		update_target(self.critic_target, self.critic_network, self.rho)
-		update_target(self.cost_target, self.critic_network, self.rho)
+		self.update_target(self.actor_target, self.actor_network, self.rho)
+		self.update_target(self.critic_target, self.critic_network, self.rho)
+		self.update_target(self.cost_target, self.critic_network, self.rho)
 
 		return c_l, a_l, cost
 

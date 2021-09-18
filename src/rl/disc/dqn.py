@@ -6,8 +6,9 @@ import tensorflow as tf
 from tensorflow.keras import Model
 
 from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
-						BUFFER_SIZE, BATCH_SIZE, Q_LR)
+							BUFFER_SIZE, BATCH_SIZE, Q_LR)
 from rl.utils import OUActionNoise, ReplayBuffer
+
 
 class QNetwork(Model):
 
@@ -36,6 +37,7 @@ class QNetwork(Model):
 			kernel_initializer=last_init)(out)
 
 		super().__init__(inputs, outputs)
+
 
 class DQL:
 

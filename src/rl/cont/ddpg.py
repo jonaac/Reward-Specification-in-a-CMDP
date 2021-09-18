@@ -10,7 +10,6 @@ from rl.utils import OUActionNoise, ReplayBuffer
 
 
 class ActorNetwork(Model):
-
 	def __init__(self, states, actions, action_max):
 
 		super(ActorNetwork, self).__init__()
@@ -45,8 +44,8 @@ class ActorNetwork(Model):
 		layer_2 = self.layer_2(layer_1)
 		return self.outputs(layer_2) * self.action_max
 
-class CriticNetwork(Model):
 
+class CriticNetwork(Model):
 	def __init__(self, states, actions, action_max):
 		
 		last_init = tf.random_normal_initializer(stddev=0.00005)
@@ -81,6 +80,7 @@ class CriticNetwork(Model):
 		# Outputs single value for given state-action
 		super().__init__([state_input, action_input], outputs)
 
+
 def update_target(target, ref, rho=0):
 	weights = []
 	old_weights = list(zip(target.get_weights(), ref.get_weights()))
@@ -89,6 +89,7 @@ def update_target(target, ref, rho=0):
 		weights.append(w)
 	
 	target.set_weights(weights)
+
 
 class DDPG:
 
@@ -172,9 +173,6 @@ class DDPG:
 		
 		self.update_weights = update_weights
 
-	"""
-	NEEDS REVIEW, SEEMS LIKE OUPUT IS UNI-DIMENSIONAL
-	"""
 	def act(self, state, _notrandom=True, noise=True):
 		_random = np.random.uniform(self.action_low,
 									self.action_high,
@@ -208,7 +206,7 @@ class DDPG:
 			return False
 
 	def learn(self, entry):
-		s,a,r,_,sn,done = zip(*entry)
+		s, a, r, _, sn, done = zip(*entry)
 
 		c_l, a_l = self.update_weights(	
 			tf.convert_to_tensor(s,dtype=tf.float32),

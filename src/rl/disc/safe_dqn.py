@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 
 from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
-						BUFFER_SIZE, BATCH_SIZE, Q_LR)
+						BUFFER_SIZE, BATCH_SIZE, Q_LR, COST_BOUND)
 from rl.utils import OUActionNoise, ReplayBuffer
 from rl.disc.dqn import QNetwork, DQN
 
@@ -36,7 +36,7 @@ class SDQN(DQN):
 		])
 		def update_weights(s, a, r, d, sn, done):
 			test = [s, a, r, d, sn, done]
-# ---------------------------------------------------------------------------- #
+			# ---------------------------------------------------------------------------- #
 			# Update Q-Network
 			with tf.GradientTape() as tape:
 				tape.watch(self.dqn.trainable_variables)
@@ -67,7 +67,7 @@ class SDQN(DQN):
 			self.q_optimizer.apply_gradients(
 				zip(q_grad, self.dqn.trainable_variables)
 			)
-# ---------------------------------------------------------------------------- #
+			# ---------------------------------------------------------------------------- #
 			# Update Cost Network
 			with tf.GradientTape() as tape:
 				tape.watch(self.cost_network.trainable_variables)
@@ -122,7 +122,7 @@ class SDQN(DQN):
 		return self.cur_action, q_value
 
 	def learn(self, entry):
-		s,a,r,_,sn,done = zip(*entry)
+		s, a, r, _, sn, done = zip(*entry)
 
 		q_l = self.update_weights(	
 			tf.convert_to_tensor(s,dtype=tf.float32),

@@ -10,8 +10,8 @@ from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV,
 from rl.utils import OUActionNoise, ReplayBuffer
 from rl.disc.dqn import ActorNetwork, CriticNetwork, CostNetwork, DDPG
 
-class DDPGSM(SDDPG):
 
+class DDPGSM(SDDPG):
 	def __init__(
 			self, num_states, num_actions, action_high,
 			gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
@@ -19,7 +19,6 @@ class DDPGSM(SDDPG):
 		super().__init__(
 			num_states, num_actions, action_high,
 			GAMMA, RHO, STD_DEV)
-
 
 	def remember(self, experiences):
 		# record it in the buffer based on its reward
