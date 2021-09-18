@@ -19,13 +19,12 @@ BUFFER_UNBALANCE_GAP = 0.5
 
 # training parameters
 STD_DEV = 0.2
-BATCH_SIZE = 100
-BUFFER_SIZE = 1e6
+BATCH_SIZE = 32  # * n
+BUFFER_SIZE = 50000  # * n
 TOTAL_EPISODES = 10000
 Q_LR = 1e-5
-CRITIC_LR = 1e-3
-COST_LR = 1e-3
-ACTOR_LR = 1e-4
+CRITIC_LR = 1e-5
+COST_LR = 1e-5
 WARM_UP = 0
 
 # Safety Parameters
