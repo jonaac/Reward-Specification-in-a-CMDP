@@ -41,6 +41,8 @@ avg_reward_list = []
 EPOCHS = 2000
 T = 500
 
+crm = False
+
 print('Start Training')
 print('--------------')
 
@@ -61,7 +63,7 @@ for epoch in range(EPOCHS):
 			experiences = info['crm-experience']
 			dql.remember(experiences)
 		else:
-			dql.remember(s,a,r,d,sn,int(done))
+			dql.remember(s, a, r, d, sn, int(done))
 
 		if dql.can_train():
 			entry = dql.buffer.get_batch(unbalance_p=UNBALANCE_P)
