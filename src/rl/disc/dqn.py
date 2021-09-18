@@ -6,7 +6,7 @@ from tensorflow.keras import Model
 
 from rl.dqn_parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV,
 							BUFFER_SIZE, BATCH_SIZE, Q_LR)
-from rl.utils import OUActionNoise, ReplayBuffer
+from rl.utils import ReplayBuffer
 
 
 class QNetwork(Model):
@@ -70,9 +70,6 @@ class DQL:
 		self.rho = rho
 		self.num_states = num_states
 		self.num_actions = num_actions
-		self.noise = OUActionNoise(
-			mean=np.zeros(1),
-			std_deviation=float(std_dev) * np.ones(1))
 
 		# optimizers
 		self.q_optimizer = tf.keras.optimizers.Adam(Q_LR, amsgrad=True)
