@@ -92,10 +92,6 @@ def update_target(target, ref, rho=0):
 
 
 class DDPG:
-
-	"""
-	Need to import: GAMMA, RHO, STD_DEV
-	"""
 	def __init__(self, num_states, num_actions, action_high, 
 				action_low, gamma=GAMMA, rho=RHO, std_dev=STD_DEV):
 		
@@ -209,11 +205,11 @@ class DDPG:
 		s, a, r, _, sn, done = zip(*entry)
 
 		c_l, a_l = self.update_weights(	
-			tf.convert_to_tensor(s,dtype=tf.float32),
-			tf.convert_to_tensor(a,dtype=tf.float32),
-			tf.convert_to_tensor(r,dtype=tf.float32),
-			tf.convert_to_tensor(sn,dtype=tf.float32),
-			tf.convert_to_tensor(done,dtype=tf.float32)
+			tf.convert_to_tensor(s, dtype=tf.float32),
+			tf.convert_to_tensor(a, dtype=tf.float32),
+			tf.convert_to_tensor(r, dtype=tf.float32),
+			tf.convert_to_tensor(sn, dtype=tf.float32),
+			tf.convert_to_tensor(done, dtype=tf.float32)
 		)
 
 		update_target(self.actor_target, self.actor_network, self.rho)

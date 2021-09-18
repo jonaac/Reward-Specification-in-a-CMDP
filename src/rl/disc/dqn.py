@@ -140,11 +140,11 @@ class DQL:
 		s,a,r,_,sn,done = zip(*entry)
 
 		q_l = self.update_weights(	
-			tf.convert_to_tensor(s,dtype=tf.float32),
-			tf.convert_to_tensor(a,dtype=tf.int64),
-			tf.convert_to_tensor(r,dtype=tf.float32),
-			tf.convert_to_tensor(sn,dtype=tf.float32),
-			tf.convert_to_tensor(done,dtype=tf.float32)
+			tf.convert_to_tensor(s, dtype=tf.float32),
+			tf.convert_to_tensor(a, dtype=tf.int64),
+			tf.convert_to_tensor(r, dtype=tf.float32),
+			tf.convert_to_tensor(sn, dtype=tf.float32),
+			tf.convert_to_tensor(done, dtype=tf.float32)
 		)
 
 		self.update_target(self.dqn_target, self.dqn, self.rho)

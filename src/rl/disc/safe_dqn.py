@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 
-from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV, 
+from rl.parameters import (KERNEL_INITIALIZER, GAMMA, RHO, STD_DEV,
 						BUFFER_SIZE, BATCH_SIZE, Q_LR, COST_BOUND)
 from rl.utils import OUActionNoise, ReplayBuffer
 from rl.disc.dqn import QNetwork, DQN
@@ -125,11 +125,11 @@ class SDQN(DQN):
 		s, a, r, _, sn, done = zip(*entry)
 
 		q_l = self.update_weights(	
-			tf.convert_to_tensor(s,dtype=tf.float32),
-			tf.convert_to_tensor(a,dtype=tf.int64),
-			tf.convert_to_tensor(r,dtype=tf.float32),
-			tf.convert_to_tensor(sn,dtype=tf.float32),
-			tf.convert_to_tensor(done,dtype=tf.float32)
+			tf.convert_to_tensor(s, dtype=tf.float32),
+			tf.convert_to_tensor(a, dtype=tf.int64),
+			tf.convert_to_tensor(r, dtype=tf.float32),
+			tf.convert_to_tensor(sn, dtype=tf.float32),
+			tf.convert_to_tensor(done, dtype=tf.float32)
 		)
 
 		self.update_target(self.dqn_target, self.dqn, self.rho)
