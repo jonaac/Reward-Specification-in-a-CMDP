@@ -4,7 +4,6 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from rl.parameters import BUFFER_UNBALANCE_GAP
 from collections import deque
 
 
@@ -38,6 +37,11 @@ class OUActionNoise:
 			self.x_prev = self.x_initial
 		else:
 			self.x_prev = np.zeros_like(self.mean)
+
+
+# buffer params
+UNBALANCE_P = 0.8
+BUFFER_UNBALANCE_GAP = 0.5
 
 
 class ReplayBuffer:

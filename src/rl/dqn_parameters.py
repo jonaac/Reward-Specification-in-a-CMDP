@@ -13,10 +13,6 @@ GAMMA = 0.9  # for the temporal difference
 RHO = 0.001  # to update the target networks
 KERNEL_INITIALIZER = glorot_normal()
 
-# buffer params
-UNBALANCE_P = 0.8 
-BUFFER_UNBALANCE_GAP = 0.5
-
 # training parameters
 STD_DEV = 0.2
 BATCH_SIZE = 32  # * n
