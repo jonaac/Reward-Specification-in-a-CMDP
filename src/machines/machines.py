@@ -15,13 +15,13 @@ class SafetyMachine:
 
 	def reset(self):
 		return (
-			self.rm.reset	(),
+			self.rm.reset(),
 			self.cm.reset()
 		)
 
 class RewardMachine:
 
-	def __init__(self, file): # <U, u0, T, delta_u, delta_r>
+	def __init__(self, file):
 
 		self.U = []			# list of RM states
 		self.u0 = None 		# RM initial state

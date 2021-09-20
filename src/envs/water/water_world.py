@@ -22,7 +22,8 @@ class WaterWorldParams:
 		self.state_file = state_file
 		self.use_velocities = use_velocities
 		self.ball_disappear = ball_disappear
-		
+
+
 class WaterWorld:
 
 	def __init__(self, params):
@@ -47,7 +48,6 @@ class WaterWorld:
 		# Setting up event detectors
 		self.current_collisions_old = set()
 		self._update_events()
-
 
 	def _get_current_collision(self):
 		ret = set()
@@ -105,7 +105,6 @@ class WaterWorld:
 					b.pos[1] = max_y - b.radius
 				# Reverse direction`
 				b.vel = b.vel * np.array([1.0,-1.0])
-		
 
 	def get_true_propositions(self):
 		"""
@@ -159,7 +158,6 @@ class WaterWorld:
 					features[init:init+2]   = (b.pos - agent.pos)/pos_max
 
 		return features
-	
 
 	def _is_colliding(self, pos):
 		for b in self.balls + [self.agent]:
@@ -240,6 +238,7 @@ class WaterWorld:
 			for b in self.balls:
 				b.vel = np.array([0.0,0.0], dtype=np.float)
 
+
 def normalize_angle(alpha):
 	while not(0 <= alpha < 360): 
 		if alpha < 0:
@@ -248,23 +247,26 @@ def normalize_angle(alpha):
 			alpha -= 360
 	return alpha
 
+
 def add_contact_point(contact_points, angle, new_point):
 	if angle not in contact_points:
 		contact_points[angle] = new_point
 	elif new_point[0] < contact_points[angle][0]:
 		contact_points[angle] = new_point
 
+
 def get_eye_features(dd, obj, num_classes, range_max, vel_max):
 	# range, type, v_x, v_y
 	n_features = 1+2+num_classes
-	ret = np.zeros(n_features,dtype=np.float)
+	ret = np.zeros(n_features, dtype=np.float)
 	ret[0] = dd / range_max
 	ret[1:3] = [0.0,0.0] if obj == "W" else obj.vel / vel_max
 	type_id = -1 if obj == "W" else ord(obj.color) - ord('a') + 3
 	ret[type_id] = 1
 	return ret
 
-def dist(p1,p2):
+
+def dist(p1, p2):
 	ret = np.linalg.norm(p1-p2, ord=2)
 	if type(ret) != np.float64:
 		print("Error, the distance is not a float")
@@ -273,15 +275,14 @@ def dist(p1,p2):
 		print("ret", ret)		
 	return ret
 
-"""
-Enum with the actions that the agent can execute
-"""
+
 class Actions(Enum):
 	none  = 0 # none
 	up	= 1 # move up
 	right = 2 # move right
 	down  = 3 # move down
 	left  = 4 # move left
+
 
 class Ball:
 	def __init__(self, color, radius, pos, vel): #row and column
@@ -309,6 +310,7 @@ class Ball:
 
 	def get_info(self):
 		return self.pos, self.vel
+
 
 class BallAgent(Ball):
 	def __init__(self,color, radius, pos, vel, actions, vel_delta, vel_max):
