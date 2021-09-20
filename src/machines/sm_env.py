@@ -36,15 +36,10 @@ class SafetyMachineEnv(gym.Wrapper):
 			dtype=np.uint8
 		)
 
-		print("Safety Machine Environment")
-		print("WaterWorld Observation Space: {}".format(feat.shape[0]))
-		print("Reward Machine Observation Space: {}".format(rm_s.shape[0]))
-		print("Cost Machine Observation Space: {}".format(cm_s.shape[0]))
-
-		self.observation_dict  = spaces.Dict({
-									'features':feat,
-									'rm-state':rm_s,
-									'cm-state':cm_s
+		self.observation_dict = spaces.Dict({
+									'features': feat,
+									'rm-state': rm_s,
+									'cm-state': cm_s
 								})
 
 		flatdim = gym.spaces.flatdim(self.observation_dict)
@@ -107,7 +102,7 @@ class SafetyMachineEnv(gym.Wrapper):
 
 		# update the RM state
 		self.current_rm_u_id, r, rm_done = self.current_sm.rm.step(
-			self.current_rm_u_id, 
+			self.current_rm_u_id,
 			true_props,
 			info
 		)
@@ -152,7 +147,7 @@ class SafetyMachineEnv(gym.Wrapper):
 		sm_obs = self.env.get_observation(obs, sm_id, rm_u_id, cm_u_id, False)
 		
 		next_rm_u_id, rm_r, rm_done = sm.rm.step(rm_u_id, true_props, info)
-		next_cm_u_id, cm_d, cm_done = sm.cm.step(cm_u_id,true_props,info)
+		next_cm_u_id, cm_d, cm_done = sm.cm.step(cm_u_id, true_props, info)
 		
 		done = rm_done or env_done or cm_done
 		sm_next_obs = self.env.get_observation(
@@ -163,7 +158,7 @@ class SafetyMachineEnv(gym.Wrapper):
 			done
 		)
 		
-		return (sm_obs,action,rm_r,cm_d,sm_next_obs,done)
+		return sm_obs, action, rm_r, cm_d, sm_next_obs, done
 
 	def _get_crm_experience(
 			self, obs, cm_u_id, action, next_obs,
