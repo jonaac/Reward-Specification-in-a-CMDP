@@ -10,18 +10,18 @@ class SafetyMachineEnv(gym.Wrapper):
 		super().__init__(env)
 
 		# Loading the reward machines
-		self.safety_machines = [] # list of safety machines
-		self.num_rm_states = 0 # number of total rm states
-		self.num_cm_states = 0 # number of total cm states
+		self.safety_machines = []  # list of safety machines
+		self.num_rm_states = 0  # number of total rm states
+		self.num_cm_states = 0  # number of total cm states
 		for rm_file, cm_file in zip(rm_files, cm_files):
 			sm = SafetyMachine(rm_file, cm_file)
 			self.num_rm_states += len(sm.get_rm_states())
 			self.num_cm_states += len(sm.get_cm_states())
 			self.safety_machines.append(sm)
-		self.num_sm = len(self.safety_machines) # number safety machines
+		self.num_sm = len(self.safety_machines)  # number safety machines
 
-		# The observation space is a dictionary including the env features and 
-		# a one-hot representation of the state in the reward machine
+		# The observation space is a dictionary including the env features
+		# and a one-hot representation of the state in the reward machine
 		feat = env.observation_space
 		rm_s = spaces.Box(
 			low=0,
@@ -43,7 +43,7 @@ class SafetyMachineEnv(gym.Wrapper):
 								})
 
 		flatdim = gym.spaces.flatdim(self.observation_dict)
-		s_low  = float(env.observation_space.low[0])
+		s_low = float(env.observation_space.low[0])
 		s_high = float(env.observation_space.high[0])
 		self.observation_space = spaces.Box(
 			low=s_low,
@@ -59,29 +59,30 @@ class SafetyMachineEnv(gym.Wrapper):
 			for u_id in sm.rm.get_states():
 				u_features = np.zeros(self.num_rm_states)
 				u_features[len(self.rm_state_features)] = 1
-				self.rm_state_features[(sm_id,u_id)] = u_features
+				self.rm_state_features[(sm_id, u_id)] = u_features
 
 			for u_id in sm.cm.get_states():
 				u_features = np.zeros(self.num_cm_states)
 				u_features[len(self.cm_state_features)] = 1
-				self.cm_state_features[(sm_id,u_id)] = u_features
+				self.cm_state_features[(sm_id, u_id)] = u_features
 		
 		self.rm_done_feat = np.zeros(self.num_rm_states)
 		self.cm_done_feat = np.zeros(self.num_cm_states)
 
 		# Selecting the current RM task
 		self.current_sm_id = -1
-		self.current_sm	= None
+		self.current_sm = None
+		self.current_rm_u_id, self.current_cm_u_id = None, None
 
 	def reset(self):
 		# Reseting the environment and selecting the next RM tasks
 		self.obs = self.env.reset()
-		self.current_sm_id = (self.current_sm_id+1)%self.num_sm
+		self.current_sm_id = (self.current_sm_id+1) % self.num_sm
 		self.current_sm = self.safety_machines[self.current_sm_id]
 		self.current_rm_u_id, self.current_cm_u_id = self.current_sm.reset()
 
 		# Adding the RM state to the observation
-		return self.get_observation(self.obs, 
+		return self.get_observation(self.obs,
 									self.current_sm_id,
 									self.current_rm_u_id,
 									self.current_cm_u_id,
@@ -94,7 +95,9 @@ class SafetyMachineEnv(gym.Wrapper):
 		# getting the output of the detectors and saving information for 
 		# generating counterfactual experiences
 		true_props = self.env.get_events()
-		self.crm_params = self.obs, self.current_cm_u_id, action, next_obs, env_done, true_props, info
+		self.crm_params = \
+			self.obs, self.current_cm_u_id, action, \
+			next_obs, env_done, true_props, info
 		self.obs = next_obs
 
 		crm_experience = self._get_crm_experience(*self.crm_params)
@@ -129,8 +132,8 @@ class SafetyMachineEnv(gym.Wrapper):
 			rm_feat = self.rm_done_feat
 			cm_feat = self.cm_done_feat
 		else:
-			rm_feat = self.rm_state_features[(sm_id,rm_u_id)]
-			cm_feat = self.cm_state_features[(sm_id,cm_u_id)]
+			rm_feat = self.rm_state_features[(sm_id, rm_u_id)]
+			cm_feat = self.cm_state_features[(sm_id, cm_u_id)]
 		
 		sm_obs = {
 			'features': next_obs,
