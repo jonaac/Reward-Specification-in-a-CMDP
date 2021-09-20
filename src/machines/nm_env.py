@@ -24,8 +24,8 @@ class NoMachineEnv(gym.Wrapper):
 		# a one-hot representation of the state in the reward machine
 		feat = env.observation_space
 
-		self.observation_dict  = spaces.Dict({
-									'features':feat
+		self.observation_dict = spaces.Dict({
+									'features': feat
 								})
 
 		flatdim = gym.spaces.flatdim(self.observation_dict)
@@ -40,7 +40,8 @@ class NoMachineEnv(gym.Wrapper):
 
 		# Selecting the current RM task
 		self.current_sm_id = -1
-		self.current_sm	= None
+		self.current_sm = None
+		self.current_rm_u_id, self.current_cm_u_id = None, None
 
 	def reset(self):
 		# Reseting the environment and selecting the next RM tasks
@@ -64,7 +65,7 @@ class NoMachineEnv(gym.Wrapper):
 		self.obs = next_obs
 
 		# update the RM state
-		self.current_rm_u_id, r, rm_done = self.current_rm.step(
+		self.current_rm_u_id, r, rm_done = self.current_sm.rm.step(
 			self.current_rm_u_id, 
 			true_props,
 			info)
